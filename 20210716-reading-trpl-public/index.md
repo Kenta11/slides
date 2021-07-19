@@ -1,7 +1,7 @@
 ---
 title: The Rust Programming Language 読書会 \#1
 author: Kenta Arai
-date: "2021年7月16日"
+date: "2021/7/16"
 theme: black
 slideNumber: true
 center: false
