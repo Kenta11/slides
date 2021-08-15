@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Kenta Arai">
+  <title>The Rust Programming Language 読書会</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@^4//dist/reset.css">
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@^4//dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/reveal.js@^4//dist/theme/sky.css" id="theme">
+  <link rel="stylesheet" href="custom.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/earlyaccess/notosansjapanese.css" />
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">The Rust Programming Language 読書会</h1>
+  <p class="author">Kenta Arai</p>
+  <p class="date">2021/8/20</p>
+</section>
+
+<section id="copyright" class="title-slide slide level1">
+<h1>Copyright</h1>
+<ul>
+<li>The Rust trademark is owned and protected by The Rust Foundation</li>
+<li><a href="https://github.com/rust-lang/book">The Rust Programming Language</a> is licensed under <a href="https://github.com/rust-lang/book/blob/main/COPYRIGHT">Apatch 2.0 and MIT terms</a></li>
+<li>This slide is a derivative work of TRPL, and is licensed under Apatch 2.0 and MIT terms</li>
+</ul>
+</section>
+
+<section id="enumとパターンマッチング" class="title-slide slide level1">
+<h1>6. Enumとパターンマッチング</h1>
+<ul>
+<li>この章のトピック：<strong>列挙型(enum)</strong>
+<ul>
+<li>Rustでは呼吸をするように列挙型を使います</li>
+<li>TRPLでも頻出する，大事な機能</li>
+</ul></li>
+<li>enumを使う上で便利な機能についても取り上げます
+<ul>
+<li>Option型: そもそも値があるか？を表現する列挙型</li>
+<li>match式: switch文ライクで，網羅的なフロー制御機能</li>
+<li>if let: 列挙型を使う上で便利な慣用句</li>
+</ul></li>
+</ul>
+</section>
+
+<section id="enumを定義する" class="title-slide slide level1">
+<h1>6.1 Enumを定義する</h1>
+<ul>
+<li>Rustでは表現したい内容によって，構造体よりも列挙型が好ましいケースがある</li>
+<li>例題：IPアドレスの規格を表現してみましょう
+<ul>
+<li>IPアドレスの規格：IPv4とIPv6</li>
+</ul></li>
+<li>列挙型の各列挙子はインスタンスとして生成できます</li>
+</ul>
+<pre><code>enum IpAddrKind {
+    V4,
+    V6,
+}
+
+let four = IpAddrKind::V4;
+let six = IpAddrKind::V6;</code></pre>
+</section>
+
+<section id="enumの値" class="title-slide slide level1">
+<h1>Enumの値</h1>
+<ul>
+<li>列挙子は列挙型の名前で名前空間分けがされている
+<ul>
+<li><code>列挙型名::列挙子名</code></li>
+</ul></li>
+<li>列挙型は型なので，変数宣言や関数の引数の型として使える</li>
+</ul>
+<pre><code>let four = IpAddrKind::V4;
+let six: IpAddrKind = IpAddrKind::V6;
+
+fn route(ip_type: IpAddrKind) { /* 省略 */ }</code></pre>
+</section>
+
+<section id="enumのメリット" class="title-slide slide level1">
+<h1>Enumのメリット</h1>
+<ul>
+<li>列挙型を使うことで，IPアドレスの種類を分類できました</li>
+<li>ではIPアドレスそのもの（データ）はどうやって保持したらいいでしょうか？</li>
+<li><strong>列挙型にはデータを紐付けることができます</strong></li>
+</ul>
+<pre><code>enum IpAddr {
+    V4(String),
+    V6(String),
+}
+
+let home = IpAddr::V4(String::from(&quot;127.0.0.1&quot;));
+let loopback = IpAddr::V6(String::from(&quot;::1&quot;));</code></pre>
+</section>
+
+<section id="enumに紐付けるデータは異なる型でもok" class="title-slide slide level1">
+<h1>Enumに紐付けるデータは異なる型でもOK</h1>
+<ul>
+<li>IPv4とIPv6は表現構造が違います
+<ul>
+<li>IPv4: 0から255までのいずれかの値を持つ，4つの数値</li>
+<li>IPv6: 0から65535までのいずれかの値を持つ，8つの数値</li>
+</ul></li>
+<li>もし数値で表現したければ…？</li>
+</ul>
+<pre><code>enum IpAddr {
+    V4(u8, u8, u8, u8), // IPv4は個別の値を保持したいな
+    V6(String),         // IPv6は長いから文字列でいいや
+}
+
+let home = IpAddr::V4(127, 0, 0, 1);
+let loopback = IpAddr::V6(String::from(&quot;::1&quot;));</code></pre>
+</section>
+
+<section id="参考標準ライブラリのipアドレスはこんな実装" class="title-slide slide level1">
+<h1>【参考】標準ライブラリのIPアドレスはこんな実装</h1>
+<pre><code>struct Ipv4Addr { /* 省略 */ }
+
+struct Ipv6Addr { /* 省略 */ }
+
+enum IpAddr {
+    V4(Ipv4Addr),
+    V6(Ipv6Addr),
+}</code></pre>
+</section>
+
+<section id="列挙型-v.s.-構造体" class="title-slide slide level1">
+<h1>列挙型 v.s. 構造体</h1>
+<ul>
+<li>より複雑なデータを扱うとどうなるだろう？</li>
+</ul>
+<pre><code>enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(String),
+    ChangeColor(i32, i32, i32),
+}</code></pre>
+<pre><code>struct QuitMessage; // ユニット構造体
+struct MoveMessage {
+    x: i32,
+    y: i32,
+}
+struct WriteMessage(String); // タプル構造体
+struct ChangeColorMessage(i32, i32, i32); // タプル構造体</code></pre>
+</section>
+
+<section id="enumに関数を関連付ける" class="title-slide slide level1">
+<h1>Enumに関数を関連付ける</h1>
+<ul>
+<li>構造体と同様にメソッドを定義できる</li>
+</ul>
+<pre><code>impl Message {
+    fn call(&amp;self) {
+        // メソッド本体はここに定義される
+    }
+}
+
+let m = Message::Write(String::from(&quot;hello&quot;));
+m.call();</code></pre>
+</section>
+
+<section id="option-enumとnull値に勝る利点" class="title-slide slide level1">
+<h1>Option enumとNull値に勝る利点</h1>
+<ul>
+<li>CやJavaでは，データが無いことをNullで表現する</li>
+<li>Nullを適切に扱うのはプログラマの責任
+<ul>
+<li>有効な値は有効な値，無効な値はNullとして処理する</li>
+</ul></li>
+<li>もしNullの値を有効な値として使ったらどうなるだろう？
+<ul>
+<li>変数だったら…予期せぬ値を読み書き</li>
+<li>関数だったら…でたらめな処理を始めてしまう</li>
+<li>e.x. Unix系OSにおけるsegmentation fault, JavaにおけるNullPointerException</li>
+</ul></li>
+<li><strong>RustではOptionを使いましょう！</strong></li>
+</ul>
+</section>
+
+<section id="option型" class="title-slide slide level1">
+<h1>Option<T>型</h1>
+<ul>
+<li>値の有無を表現する型</li>
+<li>とても便利なので，初期化処理(prelude)でも使われている
+<ul>
+<li>明示的にスコープ内へ導入する必要が無い</li>
+</ul></li>
+</ul>
+<pre><code>enum Option&lt;T&gt; {
+    Some(T),
+    None,
+}</code></pre>
+<pre><code>let some_number = Some(5);
+let some_string = Some(&quot;a string&quot;);
+
+let absent_number: Option&lt;i32&gt; = None;</code></pre>
+</section>
+
+<section id="nullと比べてなぜ便利" class="title-slide slide level1">
+<h1>Nullと比べてなぜ便利？</h1>
+<ul>
+<li><strong>値が無い（=None）だったら，値にアクセスできないため</strong></li>
+<li>Noneから値を読み出そうとすると，そもそもコンパイルエラーに</li>
+</ul>
+<pre><code>let x: i8 = 5;
+let y: Option&lt;i8&gt; = None;
+
+let sum = x + y;</code></pre>
+<pre><code>   Compiling playground v0.0.1 (/playground)
+error[E0277]: cannot add `Option&lt;i8&gt;` to `i8`
+ --&gt; src/main.rs:6:17
+  |
+6 |     let sum = x + y;
+  |                 ^ no implementation for `i8 + Option&lt;i8&gt;`
+  |
+  = help: the trait `Add&lt;Option&lt;i8&gt;&gt;` is not implemented for `i8`</code></pre>
+</section>
+
+<section id="matchフロー制御演算子" class="title-slide slide level1">
+<h1>6.2 matchフロー制御演算子</h1>
+<ul>
+<li></li>
+</ul>
+</section>
+
+<section id="値に束縛されるパターン" class="title-slide slide level1">
+<h1>値に束縛されるパターン</h1>
+
+</section>
+
+<section id="optionとのマッチ" class="title-slide slide level1">
+<h1>Option<T>とのマッチ</h1>
+
+</section>
+
+<section id="マッチは包括的" class="title-slide slide level1">
+<h1>マッチは包括的</h1>
+
+</section>
+
+<section id="というプレースホルダー" class="title-slide slide level1">
+<h1>_というプレースホルダー</h1>
+
+</section>
+
+<section id="if-letで簡潔なフロー制御" class="title-slide slide level1">
+<h1>6.3 if letで簡潔なフロー制御</h1>
+
+</section>
+
+<section id="まとめ" class="title-slide slide level1">
+<h1>まとめ</h1>
+
+</section>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/reveal.js@^4//dist/reveal.js"></script>
+
+  <!-- reveal.js plugins -->
+  <script src="https://unpkg.com/reveal.js@^4//plugin/notes/notes.js"></script>
+  <script src="https://unpkg.com/reveal.js@^4//plugin/search/search.js"></script>
+  <script src="https://unpkg.com/reveal.js@^4//plugin/zoom/zoom.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+      
+        // Display the page number of the current slide
+        slideNumber: true,
+        // Push each slide change to the browser history
+        history: true,
+
+        // reveal.js plugins
+        plugins: [
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    </body>
+</html>

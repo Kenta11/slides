@@ -1,3 +1,6 @@
 [submodule "20210716-reading-trpl-public/reveal.js"]
 	path = 20210716-reading-trpl-public/reveal.js
 	url = https://github.com/hakimel/reveal.js
+[submodule "20210820-reading-trpl-public/reveal.js"]
+	path = 20210820-reading-trpl-public/reveal.js
+	url = https://github.com/hakimel/reveal.js
