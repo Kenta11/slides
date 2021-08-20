@@ -1,5 +1,5 @@
 ---
-title: The Rust Programming Language 読書会 #3
+title: 6. Enumとパターンマッチング
 author: Kenta Arai
 date: "2021/8/20"
 theme: sky
@@ -13,12 +13,12 @@ center: false
 - [The Rust Programming Language](https://github.com/rust-lang/book) is licensed under [Apatch 2.0 and MIT terms](https://github.com/rust-lang/book/blob/main/COPYRIGHT)
 - This slide is a derivative work of TRPL, and is licensed under Apatch 2.0 and MIT terms
 
-# 6. Enumとパターンマッチング
+# アウトライン
 
-- この章のトピック：**列挙型(enum)**
+- この章のトピック：**列挙型(Enum)**
   - Rustでは呼吸をするように列挙型を使います
   - TRPLでも頻出する，大事な機能
-- enumを使う上で便利な機能についても取り上げます
+- Enumを使う上で便利な機能についても取り上げます
   - Option型: そもそも値があるか？を表現する列挙型
   - match式: switch文ライクで，網羅的なフロー制御機能
   - if let: 列挙型を使う上で便利な慣用句
@@ -74,7 +74,7 @@ let loopback = IpAddr::V6(String::from("::1"));
 - IPv4とIPv6は表現構造が違います
   - IPv4: 0から255までのいずれかの値を持つ，4つの数値
   - IPv6: 0から65535までのいずれかの値を持つ，8つの数値
-- もし数値で表現したければ...？
+- もしIPv4を数値で表現したければ...？
 
 ```
 enum IpAddr {
@@ -137,16 +137,14 @@ let m = Message::Write(String::from("hello"));
 m.call();
 ```
 
-# Option enumとNull値に勝る利点
+# Null値の問題点
 
 - CやJavaでは，データが無いことをNullで表現する
 - Nullを適切に扱うのはプログラマの責任
-  - 有効な値は有効な値，無効な値はNullとして処理する
 - もしNullの値を有効な値として使ったらどうなるだろう？
   - 変数だったら...予期せぬ値を読み書き
   - 関数だったら...でたらめな処理を始めてしまう
   - e.x. Unix系OSにおけるsegmentation fault, JavaにおけるNullPointerException
-- **RustではOptionを使いましょう！**
 
 # Option<T>型
 
@@ -170,12 +168,12 @@ let absent_number: Option<i32> = None;
 
 # Nullと比べてなぜ便利？
 
-- **値が無い（=None）だったら，値にアクセスできないため**
-- Noneから値を読み出そうとすると，そもそもコンパイルエラーに
+- **値に直接アクセスできないため**
+- そもそもコンパイルエラーに
 
 ```
 let x: i8 = 5;
-let y: Option<i8> = None;
+let y: Option<i8> = Some(3);
 
 let sum = x + y;
 ```
@@ -189,46 +187,192 @@ error[E0277]: cannot add `Option<i8>` to `i8`
   |                 ^ no implementation for `i8 + Option<i8>`
   |
   = help: the trait `Add<Option<i8>>` is not implemented for `i8`
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `playground`
+
+To learn more, run the command again with --verbose.
+```
+
+# 【補足】値を取り出すには？
+
+- unwrap()を使う
+  - Someなら関連付けられた値を得られる
+  - Noneだとそこでpanicに
+- 安全に値を取り出すには→6.2以降で
+
+```
+let x: i8 = 5;
+let y: Option<i8> = Some(3);
+
+let sum = x + y.unwrap();
 ```
 
 # 6.2 matchフロー制御演算子
 
-- 
+- マッチしたパターンに応じてコードを実行するフロー制御演算子
+- `match`は式であるため，値を返す
+
+```
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter,
+}
+
+fn value_in_cents(coin: Coin) -> u32 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter => 25,
+    }
+}
+```
+
+# matchは包括的
+
+- matchで網羅的にパターンが列挙されていないと，コンパイルエラーに
+
+```
+fn value_in_cents(coin: Coin) -> u32 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        // Coin::Quarter => 25,
+    }
+}
+```
+
+```
+    Compiling playground v0.0.1 (/playground)
+error[E0004]: non-exhaustive patterns: `Quarter` not covered
+ --> src/main.rs:9:11
+  |
+1 | / enum Coin {
+2 | |     Penny,
+3 | |     Nickel,
+4 | |     Dime,
+5 | |     Quarter,
+  | |     ------- not covered
+6 | | }
+  | |_- `Coin` defined here
+...
+9 |       match coin {
+  |             ^^^^ pattern `Quarter` not covered
+  |
+  = help: ensure that all possible cases are being handled, possibly by adding wildcards or more match arms
+  = note: the matched value is of type `Coin`
+
+error: aborting due to previous error
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `playground`
+
+To learn more, run the command again with --verbose.
+```
+
+# \_というプレースホルダー
+
+- 全てのパターンを列挙したくない場合，\_が便利です
+- \_はその他全てのパターンに対してマッチします
+- ()はユニット値（何も無い）です
+
+```
+let some_u8_value = 0u8;
+match some_u8_value {
+    1 => println!("one"),
+    3 => println!("three"),
+    5 => println!("five"),
+    7 => println!("seven"),
+    _ => (),
+}
+```
 
 # 値に束縛されるパターン
 
+- `match`はマッチした値を束縛できる
+- コインにデザインされた州名を表示してみましょう
+  - 一時期のQuaterコインは州ごとにデザインされていた
 
+- ところで原本の題目は`Patterns that Bind to Values`
+  - 実際は，値を束縛するパターン？
 
+```
+#[derive(Debug)] // すぐに州を点検できるように
+enum UsState {
+    Alabama,
+    Alaska,
+    // ... などなど
+}
 
+enum Coin {
+    Penny,
+    Nickel,
+    Dime,
+    Quarter(UsState),
+}
+
+fn value_in_cents(coin: Coin) -> u32 {
+    match coin {
+        Coin::Penny => 1,
+        Coin::Nickel => 5,
+        Coin::Dime => 10,
+        Coin::Quarter(state) => {
+            println!("State quarter from {:?}!", state);
+            25
+        },
+    }
+}
+```
 
 # Option<T>とのマッチ
 
+- Option<T>に関連付けられたデータを取り出すには？
+- Optionももちろん列挙型なので，`match`で扱えます
 
-
-
-
-# マッチは包括的
-
-
-
-
-
-# _というプレースホルダー
-
-
-
-
+```
+fn plus_one(x: Option<i32>) -> Option<i32> {
+    match x {
+        None => None,
+        Some(i) => Some(i + 1),
+    }
+}
+    
+let five = Some(5);
+let six = plus_one(five);
+let none = plus_one(None);
+```
 
 # 6.3 if letで簡潔なフロー制御
 
+- 1つの値にしか興味が無い場合，`match`は少し長い
+- `if let`はより短い表現で値をマッチさせることができます
 
+```
+// matchだとちょっと長い
+let some_u8_value = Some(0u8);
+match some_u8_value {
+    Some(3) => println!("three"),
+    _ => (),
+}
 
-
+// if letだと簡潔
+if let Some(3) = some_u8_value {
+    println!("three");
+}
+```
 
 # まとめ
 
-
-
-
-
+- Rustで頻出するEnumについて述べた
+- Enumに関する便利な機能について取り上げた
+  - Option型: 値の有無を表現する列挙型
+  - match式: 網羅的なフロー制御機能
+  - if let: 列挙型を使う上で便利な慣用句
+ 
 
