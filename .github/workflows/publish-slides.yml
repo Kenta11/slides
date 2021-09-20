@@ -10,10 +10,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Convert Markdown into HTML with reveal.js
-        run: apt install pandoc -y; for d in 20210716-reading-trpl-public 20210820-reading-trpl-public; do make -C $f; done
+      - name: Convert 20210716-reading-trpl-public
+        uses: docker://pandoc/core:2.12
+        with:
+          args: >-
+            -f markdown+emoji 20210716-reading-trpl-public/index.md
+	          -t revealjs -o 20210716-reading-trpl-public/index.html
+	          --template=20210716-reading-trpl-public/template.html
+	          -s -c 20210716-reading-trpl-public/custom.css
+	          --slide-level=2
+
+      - name: Convert 20210820-reading-trpl-public
+        uses: docker://pandoc/core:2.12
+        with:
+          args: >-
+            -f markdown+emoji 20210820-reading-trpl-public/index.md
+	          -t revealjs -o 20210820-reading-trpl-public/index.html
+	          --template=20210820-reading-trpl-public/template.html
+	          -s -c 20210820-reading-trpl-public/custom.css
+	          --slide-level=2
       
-      - name: Convert Markdown into HTML with Marp
+      - name: Convert 20211001-reading-trpl-public
         uses: KoharaKazuya/marp-cli-action@v1
         with:
           config-file: ./20211001-reading-trpl-public/.marprc.yml
