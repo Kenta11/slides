@@ -5,14 +5,14 @@
 ## The Rust Programming Language 読書会 #1
 
 - スライド: [https://kenta11.github.io/slides/20210716-reading-trpl-public/](https://kenta11.github.io/slides/20210716-reading-trpl-public/)
-- リポジトリ: [https://github.com/Kenta11/slides/tree/main/20210716-reading-trpl-public](https://github.com/Kenta11/slides/tree/main/20210716-reading-trpl-public)
+- リポジトリ: [https://github.com/Kenta11/slides/tree/gh-pages/20210716-reading-trpl-public](https://github.com/Kenta11/slides/tree/gh-pages/20210716-reading-trpl-public)
 
 ## The Rust Programming Language 読書会 #3
 
 - スライド: [https://kenta11.github.io/slides/20210820-reading-trpl-public](https://kenta11.github.io/slides/20210820-reading-trpl-public)
-- リポジトリ: [https://github.com/Kenta11/slides/tree/main/20210820-reading-trpl-public](https://github.com/Kenta11/slides/tree/main/20210820-reading-trpl-public)
+- リポジトリ: [https://github.com/Kenta11/slides/tree/gh-pages/20210820-reading-trpl-public](https://github.com/Kenta11/slides/tree/gh-pages/20210820-reading-trpl-public)
 
 ## The Rust Programming Language 読書会 #6
 
 - スライド: [https://kenta11.github.io/slides/20211001-reading-trpl-public](https://kenta11.github.io/slides/20211001-reading-trpl-public)
-- リポジトリ: [https://github.com/Kenta11/slides/tree/main/20211001-reading-trpl-public](https://github.com/Kenta11/slides/tree/main/20211001-reading-trpl-public)
+- リポジトリ: [https://github.com/Kenta11/slides/tree/gh-pages/20211001-reading-trpl-public](https://github.com/Kenta11/slides/tree/gh-pages/20211001-reading-trpl-public)

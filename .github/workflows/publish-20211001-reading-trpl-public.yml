@@ -21,4 +21,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN  }}
           publish_dir: ./20211001-reading-trpl-public
-          publish_branch: main
