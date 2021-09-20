@@ -14,9 +14,11 @@ jobs:
         uses: KoharaKazuya/marp-cli-action@v1
         with:
           config-file: ./.marprc.yml
+          generate-pdf: false
       
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN  }}
-          publish_dir: ./
+          publish_dir: ./20211001-reading-trpl-public
+          publish_branch: main
