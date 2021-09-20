@@ -11,8 +11,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Convert Markdown into HTML with reveal.js
-        uses: docker://pandoc/core:2.9
-        run: for d in 20210716-reading-trpl-public 20210820-reading-trpl-public; do make -C $f; done
+        run: apt install pandoc -y; for d in 20210716-reading-trpl-public 20210820-reading-trpl-public; do make -C $f; done
       
       - name: Convert Markdown into HTML with Marp
         uses: KoharaKazuya/marp-cli-action@v1
