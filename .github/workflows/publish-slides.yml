@@ -9,11 +9,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Convert Markdown into HTML with reveal.js
+        uses: docker://pandoc/core:2.9
+        run: for d in 20210716-reading-trpl-public 20210820-reading-trpl-public; do make -C $f; done
       
-      - name: Convert Markdown into HTML
+      - name: Convert Markdown into HTML with Marp
         uses: KoharaKazuya/marp-cli-action@v1
         with:
-          config-file: ./.marprc.yml
+          config-file: ./20211001-reading-trpl-public/.marprc.yml
           generate-pdf: false
       
       - name: Deploy to GitHub Pages
