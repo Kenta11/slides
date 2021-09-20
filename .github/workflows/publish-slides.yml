@@ -11,23 +11,23 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Convert 20210716-reading-trpl-public
-        uses: docker://pandoc/core:2.12
+        uses: docker://pandoc/core:2.14.0.2
         with:
           args: >-
             -f markdown+emoji 20210716-reading-trpl-public/index.md
             -t revealjs -o 20210716-reading-trpl-public/index.html
             --template=20210716-reading-trpl-public/template.html
-            -s -c 20210716-reading-trpl-public/custom.css
+            -s -c custom.css
             --slide-level=2
 
       - name: Convert 20210820-reading-trpl-public
-        uses: docker://pandoc/core:2.12
+        uses: docker://pandoc/core:2.14.0.2
         with:
           args: >-
             -f markdown+emoji 20210820-reading-trpl-public/index.md
             -t revealjs -o 20210820-reading-trpl-public/index.html
             --template=20210820-reading-trpl-public/template.html
-            -s -c 20210820-reading-trpl-public/custom.css
+            -s -c custom.css
             --slide-level=2
       
       - name: Convert 20211001-reading-trpl-public
