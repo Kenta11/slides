@@ -13,6 +13,16 @@ footer: TRPL読書会 #6
 - [The Rust Programming Language](https://github.com/rust-lang/book) is licensed under [Apatch 2.0 and MIT terms](https://github.com/rust-lang/book/blob/main/COPYRIGHT)
 - This slide is a derivative work of TRPL, and is licensed under Apatch 2.0 and MIT terms
 ---
+# はじめに
+
+- プログラムのテストは、バグの存在を示すには非常に効率的な手法であるが、バグの不在を示すには望み薄く不適切である
+    - 謙虚なプログラマ，エドガー・W・ダイクストラ
+- Rustの型システムは，プログラムの正当性の多くを肩代わりしてくれるが，不当性は補足してくれない
+    - 正当性：どこまで自分のコードが意図していることをしているか
+- ゆえにRustは言語内で自動化されたソフトウェアテストを書くことをサポートする
+
+- この章では，Rustのテスト機構のメカニズムについて議論します！
+---
 # 11.1. テストの記述法
 
 - テストでは，テスト対象のコードが想定通りに動作することを検証する
@@ -20,6 +30,7 @@ footer: TRPL読書会 #6
     - 必要なデータと状態を準備する
     - テスト対象のコードを動作させる
     - 結果が想定通りであることを表明する(assert)
+- キーワード：`test`属性，`should_panic`属性
 ---
 # テストの構成
 
@@ -51,12 +62,6 @@ running 1 test
 test tests::it_works ... ok
 
 test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
-
-   Doc-tests adder
-
-running 0 tests
-
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 ---
 # テストのお約束
@@ -68,40 +73,54 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
     - `ignored`は無視したために実行されなかったテスト（後述）
     - `measured`はベンチマークテスト向け（nightlyのみ）
     - `filtered out`はフィルタされたテストの数（後述）
----
-# assert!マクロでテストする
-
-- `assert!`マクロは論理型を評価する
-
 ```
-#[derive(Debug)]
-struct Rectangle { width: u32, height: u32, }
-impl Rectangle {
-    fn can_hold(&self, other: &Rectangle) -> bool {
-        self.width > other.width && self.height > other.height
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn larger_can_hold_smaller() {
-        let larger = Rectangle { width: 8, height: 7, };
-        let smaller = Rectangle { width: 5, height: 1, };
-        assert!(larger.can_hold(&smaller));
-    }
-}
+$ cargo test
+（省略）
+running 1 test
+test tests::it_works ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
-
 ---
-# assert_eq!/assert_nq!マクロでテストする
+# テスト関数の作り方
 
-- 値の等値性を`assert_eq!`及び`assert_ne!`マクロで評価できる
-- `assert`と異なり，非同値の場合に値を出力する
+- テスト関数内でマクロや属性を使い，関数の振る舞いを検証する
+- 戻り値を検証する
+    - 論理型：`assert!`
+    - 同値性：`assert_eq!`
+    - 非同値性：`assert_ne!`
+    - それ以外：`Result<T, E>`
+- `panic!`を起こすことを検証する
+    - `should_panic`属性
+---
+# assert!
+
+- `true`なら成功，`false`なら失敗
 
 ```
 pub fn add_two(a: i32) -> i32 {
-    a + 3
+    a + 2
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_adds_two() {
+        assert!(4 == add_two(2));
+    }
+}
+```
+---
+# assert_eq!/assert_ne!
+
+- 同じ値なら成功，違ったら失敗
+- 比較できる値は`PartialEq`トレイトをderiveした型である必要がある
+
+```
+pub fn add_two(a: i32) -> i32 {
+    a + 2
 }
 
 #[cfg(test)]
@@ -115,14 +134,13 @@ mod tests {
 }
 ```
 ---
-# 非同値な値をassert_eq!で検証する
+# 非同値な値をassert_eq!/assert_ne!で検証する
+
+- `assert`と異なり，非同値の場合に値を出力する
 
 ```
 $ cargo test
-   Compiling adder v0.1.0 (file:///projects/adder)
-    Finished test [unoptimized + debuginfo] target(s) in 0.61s
-     Running target/debug/deps/adder-92948b65e88960b4
-
+（省略）
 running 1 test
 test tests::it_adds_two ... FAILED
 
@@ -137,15 +155,51 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace.
 
 failures:
     tests::it_adds_two
+```
+---
+# Result
 
-test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
+- `Ok`なら成功，`Err`ならテストが失敗
 
-error: test failed, to rerun pass '--lib'
+```
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() -> Result<(), String> {
+        if 2 + 2 == 4 {
+            Ok(())
+        } else {
+            Err(String::from("two plus two does not equal four"))
+        }
+    }
+}
+```
+---
+# panicする関数をテストする
+
+- panicする関数は，戻り値から結果を判定できない
+- `should_panic`属性によって，panicした場合にテストが成功として判定する
+
+```
+pub fn add_two(a: i32) -> i32 {
+    panic!("panic! panic! panic!");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic]
+    fn run_panic() {
+        add_two(1);
+    }
+}
 ```
 ---
 # カスタムの失敗メッセージを追加する
 
-- `assert!`の第2引数，`assert_eq!`及び`assert_nq!`の第3引数に文字列を追加すると，エラーメッセージとして出力される
+- `assert!`の第2引数，`assert_eq!`及び`assert_ne!`の第3引数に文字列を追加すると，エラーメッセージとして出力される
 
 ```
 pub fn greeting(name: &str) -> String { String::from("Hello!") }
@@ -168,19 +222,16 @@ mod tests {
 
 ```
 $ cargo test
-   Compiling greeter v0.1.0 (file:///projects/greeter)
-    Finished test [unoptimized + debuginfo] target(s) in 0.93s
-     Running target/debug/deps/greeter-170b942eb5bf5e3a
-
+（省略）
 running 1 test
 test tests::greeting_contains_name ... FAILED
 
 failures:
 
 ---- tests::greeting_contains_name stdout ----
-thread 'main' panicked at 'Greeting did not contain name, value was `Hello!`', src/lib.rs:12:9
+thread 'main' panicked at 'Greeting did not contain name, value was `Hello!`',
+src/lib.rs:12:9
 note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace.
-
 
 failures:
     tests::greeting_contains_name
@@ -190,52 +241,12 @@ test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out
 error: test failed, to rerun pass '--lib'
 ```
 ---
-# panicする関数をテストする
-
-- panicする関数は，戻り値から結果を判定できない
-- `should_panic`属性によって，panicした場合にテストが成功として判定する
-
-```
-pub struct Guess { value: i32, }
-impl Guess {
-    pub fn new(value: i32) -> Guess {
-        if value < 1 || value > 100 {
-            panic!("Guess value must be between 1 and 100, got {}.", value);
-        }
-        Guess { value }
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[should_panic]
-    fn greater_than_100() { Guess::new(200); }
-}
-```
----
-# Resultでテストする
-
-- `Result`型で判定することもできる
-    - `Ok`ならテストをパス
-    - `Err`ならテストが失敗
-
-```
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() -> Result<(), String> {
-        if 2 + 2 == 4 {
-            Ok(())
-        } else {
-            Err(String::from("two plus two does not equal four"))
-        }
-    }
-}
-```
----
 # 11.2. テストの実行のされ方を制御する
+
+- `cargo test`はコードをテストモードでコンパイルし，全てのテストを並行に実行します
+- テスト実行中に生成された出力はキャプチャされ，表示されるのを防ぎます
+
+- 本節ではテストの実行のされ方について述べます
 ---
 # テストを逐次に実行する
 
@@ -302,10 +313,7 @@ fn expensive_test() {
 ```
 ```
 $ cargo test
-   Compiling adder v0.1.0 (file:///projects/adder)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.24 secs
-     Running target/debug/deps/adder-ce99bcc2479f4607
-
+（省略）
 running 2 tests
 test expensive_test ... ignored
 test it_works ... ok
@@ -329,12 +337,15 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 ```
 ---
 # 11.3. テストの体系化
+
+- 単体テスト：小規模でより集中していて，モジュール内のあらゆる関数をテストできる
+- 結合テスト：ライブラリと独立したバイナリを生成し，公開された関数のみをテストする
 ---
 # 単体テスト
 
 - 各ファイルに`tests`モジュールを作成し，テスト関数を含ませ，`cfg(test)`で注釈する
 - `cargo test`を実行した際にテスト関数が実行される
-- 非公開関数もテストできる！
+- 非公開関数もテストできる
 
 ```
 #[cfg(test)]
@@ -346,7 +357,7 @@ mod tests {
 }
 ```
 ---
-# 結合テストを作成する
+# 結合テスト
 
 - `src`ディレクトリと同じ階層に`tests`ディレクトリを作成すると，`Cargo`はそこに結合テストのファイルが置かれると認識する
 
@@ -358,33 +369,6 @@ extern crate adder;
 fn it_adds_two() {
     assert_eq!(4, adder::add_two(2));
 }
-```
----
-# 結合テストを実行する
-
-```
-$ cargo test
-   Compiling adder v0.1.0 (file:///projects/adder)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.31 secs
-     Running target/debug/deps/adder-abcabcabc
-
-running 1 test
-test tests::internal ... ok
-
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
-
-     Running target/debug/deps/integration_test-ce99bcc2479f4607
-
-running 1 test
-test it_adds_two ... ok
-
-test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
-
-   Doc-tests adder
-
-running 0 tests
-
-test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 ```
 ---
 # 結合テストだけを実行する
@@ -427,4 +411,13 @@ fn it_adds_two() {
 # まとめ
 
 - Rustのテスト機能は，機能が想定通りに動作することを確認する手段を提供する
-- `Cargo`を用いてテストプログラムのコンパイルから実行までをサポートする
+- テストの記述法
+    - `assert!`，`assert_eq!`，`assert_ne!`，`Result<T, E>`，`should_panic`
+- テストの制御
+    - 並列度を設定する：`cargo test -- --test-threads=<number of threads>`
+    - 出力をキャプチャさせない：`cargo test -- --nocapture`
+    - 特定の名前を含むテストだけを実行する：`cargo test <test name>`
+    - 無視されたテストだけを実行する：`cargo test -- --ignored`
+- テストの構成法
+    - 単体テスト：モジュール内に`#[cfg(test)]`でテスト関数を記述する
+    - 結合テスト：`tests`ディレクトリ内にテスト関数を記述する
