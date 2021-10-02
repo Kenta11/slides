@@ -17,11 +17,11 @@ footer: TRPL読書会 #6
 
 - プログラムのテストは、バグの存在を示すには非常に効率的な手法であるが、バグの不在を示すには望み薄く不適切である
     - 謙虚なプログラマ，エドガー・W・ダイクストラ
-- Rustの型システムは，プログラムの正当性の多くを肩代わりしてくれるが，不当性は補足してくれない
+- Rustの型システムは，プログラムの正当性の多くを肩代わりしてくれるが，不当性は補足しない
     - 正当性：どこまで自分のコードが意図していることをしているか
-- ゆえにRustは言語内で自動化されたソフトウェアテストを書くことをサポートする
+- Rustは言語内で自動化されたソフトウェアテストを書くことをサポートする
 
-- この章では，Rustのテスト機構のメカニズムについて議論します！
+- 本章では，Rustのテスト機構を説明する
 ---
 # 11.1. テストの記述法
 
@@ -30,6 +30,8 @@ footer: TRPL読書会 #6
     - 必要なデータと状態を準備する
     - テスト対象のコードを動作させる
     - 結果が想定通りであることを表明する(assert)
+
+- 本節では，テスト関数の記述方法を述べる
 - キーワード：`test`属性，`should_panic`属性
 ---
 # テストの構成
@@ -37,7 +39,7 @@ footer: TRPL読書会 #6
 - `test`属性で注釈された関数がテストターゲット
 - ソースコードと同じファイル内にテストを記述する
 
-```
+```rs
 #[cfg(test)]
 mod tests {
     #[test]
@@ -97,7 +99,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
 - `true`なら成功，`false`なら失敗
 
-```
+```rs
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -116,9 +118,9 @@ mod tests {
 # assert_eq!/assert_ne!
 
 - 同じ値なら成功，違ったら失敗
-- 比較できる値は`PartialEq`トレイトをderiveした型である必要がある
+- 比較する値は`PartialEq`と`Debug`トレイトをderiveした型である必要がある
 
-```
+```rs
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -161,7 +163,7 @@ failures:
 
 - `Ok`なら成功，`Err`ならテストが失敗
 
-```
+```rs
 #[cfg(test)]
 mod tests {
     #[test]
@@ -180,7 +182,7 @@ mod tests {
 - panicする関数は，戻り値から結果を判定できない
 - `should_panic`属性によって，panicした場合にテストが成功として判定する
 
-```
+```rs
 pub fn add_two(a: i32) -> i32 {
     panic!("panic! panic! panic!");
 }
@@ -201,7 +203,7 @@ mod tests {
 
 - `assert!`の第2引数，`assert_eq!`及び`assert_ne!`の第3引数に文字列を追加すると，エラーメッセージとして出力される
 
-```
+```rs
 pub fn greeting(name: &str) -> String { String::from("Hello!") }
 
 #[cfg(test)]
@@ -243,10 +245,11 @@ error: test failed, to rerun pass '--lib'
 ---
 # 11.2. テストの実行のされ方を制御する
 
-- `cargo test`はコードをテストモードでコンパイルし，全てのテストを並行に実行します
-- テスト実行中に生成された出力はキャプチャされ，表示されるのを防ぎます
+- `cargo test`はコードをテストモードでコンパイルし，全てのテストを並行に実行する
+- テスト実行中に生成された出力はキャプチャされ，表示されるのを防ぐ
 
-- 本節ではテストの実行のされ方について述べます
+- 本節ではテストの実行のされ方について述べる
+- キーワード：`--test-threads`，`--nocapture`，`ignore`属性
 ---
 # テストを逐次に実行する
 
@@ -304,7 +307,7 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 
 - テストしたくない関数がある場合，`ignore`属性で除外できる
 
-```
+```rs
 #[test]
 #[ignore]
 fn expensive_test() {
@@ -338,8 +341,11 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 ---
 # 11.3. テストの体系化
 
-- 単体テスト：小規模でより集中していて，モジュール内のあらゆる関数をテストできる
-- 結合テスト：ライブラリと独立したバイナリを生成し，公開された関数のみをテストする
+- 単体テスト：モジュール内のあらゆる関数をテストする
+- 結合テスト：ライブラリと独立したバイナリで，公開された関数のみをテストする
+
+- 本節では，単体テストと結合テストの記述方法
+- キーワード：`tests`ディレクトリ
 ---
 # 単体テスト
 
@@ -347,7 +353,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 - `cargo test`を実行した際にテスト関数が実行される
 - 非公開関数もテストできる
 
-```
+```rs
 #[cfg(test)]
 mod tests {
     #[test]
@@ -361,7 +367,7 @@ mod tests {
 
 - `src`ディレクトリと同じ階層に`tests`ディレクトリを作成すると，`Cargo`はそこに結合テストのファイルが置かれると認識する
 
-```
+```rs
 // tests/integration_tests.rs
 extern crate adder;
 
@@ -390,7 +396,7 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 
 - 結合テスト用のサブモジュールは，さらに1つ深い階層に置くことで利用できる
 
-```
+```rs
 // tests/common/mod.rs
 pub fn setup() {
     // setup code specific to your library's tests would go here
