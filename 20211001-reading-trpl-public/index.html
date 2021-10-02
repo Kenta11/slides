@@ -34,16 +34,16 @@
 </ul>
 </li>
 <li>
-<p>Rustの型システムは，プログラムの正当性の多くを肩代わりしてくれるが，不当性は補足してくれない</p>
+<p>Rustの型システムは，プログラムの正当性の多くを肩代わりしてくれるが，不当性は補足しない</p>
 <ul>
 <li>正当性：どこまで自分のコードが意図していることをしているか</li>
 </ul>
 </li>
 <li>
-<p>ゆえにRustは言語内で自動化されたソフトウェアテストを書くことをサポートする</p>
+<p>Rustは言語内で自動化されたソフトウェアテストを書くことをサポートする</p>
 </li>
 <li>
-<p>この章では，Rustのテスト機構のメカニズムについて議論します！</p>
+<p>本章では，Rustのテスト機構を説明する</p>
 </li>
 </ul>
 <footer>TRPL読書会 #6</footer>
@@ -51,15 +51,23 @@
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="4" data-paginate="true" data-footer="TRPL読書会 #6" data-marpit-pagination="4" data-marpit-pagination-total="28" style="--paginate:true;--footer:TRPL読書会 #6;">
 <h1>11.1. テストの記述法</h1>
 <ul>
-<li>テストでは，テスト対象のコードが想定通りに動作することを検証する</li>
-<li>Rustのテストコードは一般に，下記の3つを実行する
+<li>
+<p>テストでは，テスト対象のコードが想定通りに動作することを検証する</p>
+</li>
+<li>
+<p>Rustのテストコードは一般に，下記の3つを実行する</p>
 <ul>
 <li>必要なデータと状態を準備する</li>
 <li>テスト対象のコードを動作させる</li>
 <li>結果が想定通りであることを表明する(assert)</li>
 </ul>
 </li>
-<li>キーワード：<code>test</code>属性，<code>should_panic</code>属性</li>
+<li>
+<p>本節では，テスト関数の記述方法を述べる</p>
+</li>
+<li>
+<p>キーワード：<code>test</code>属性，<code>should_panic</code>属性</p>
+</li>
 </ul>
 <footer>TRPL読書会 #6</footer>
 </section>
@@ -69,11 +77,11 @@
 <li><code>test</code>属性で注釈された関数がテストターゲット</li>
 <li>ソースコードと同じファイル内にテストを記述する</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_works</span></span>() {
+        <span class="hljs-built_in">assert_eq!</span>(<span class="hljs-number">2</span> + <span class="hljs-number">2</span>, <span class="hljs-number">4</span>);
     }
 }
 </span></span></foreignObject></svg></code></pre>
@@ -148,17 +156,17 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 <ul>
 <li><code>true</code>なら成功，<code>false</code>なら失敗</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>pub fn add_two(a: i32) -&gt; i32 {
-    a + 2
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">pub</span> <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add_two</span></span>(a: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">i32</span> {
+    a + <span class="hljs-number">2</span>
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+<span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-keyword">use</span> super::*;
 
-    #[test]
-    fn it_adds_two() {
-        assert!(4 == add_two(2));
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_adds_two</span></span>() {
+        <span class="hljs-built_in">assert!</span>(<span class="hljs-number">4</span> == add_two(<span class="hljs-number">2</span>));
     }
 }
 </span></span></foreignObject></svg></code></pre>
@@ -168,19 +176,19 @@ mod tests {
 <h1>assert_eq!/assert_ne!</h1>
 <ul>
 <li>同じ値なら成功，違ったら失敗</li>
-<li>比較できる値は<code>PartialEq</code>トレイトをderiveした型である必要がある</li>
+<li>比較する値は<code>PartialEq</code>と<code>Debug</code>トレイトをderiveした型である必要がある</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>pub fn add_two(a: i32) -&gt; i32 {
-    a + 2
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">pub</span> <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add_two</span></span>(a: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">i32</span> {
+    a + <span class="hljs-number">2</span>
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+<span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-keyword">use</span> super::*;
 
-    #[test]
-    fn it_adds_two() {
-        assert_eq!(4, add_two(2));
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_adds_two</span></span>() {
+        <span class="hljs-built_in">assert_eq!</span>(<span class="hljs-number">4</span>, add_two(<span class="hljs-number">2</span>));
     }
 }
 </span></span></foreignObject></svg></code></pre>
@@ -215,14 +223,14 @@ failures:
 <ul>
 <li><code>Ok</code>なら成功，<code>Err</code>ならテストが失敗</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() -&gt; Result&lt;(), String&gt; {
-        if 2 + 2 == 4 {
-            Ok(())
-        } else {
-            Err(String::from(&quot;two plus two does not equal four&quot;))
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_works</span></span>() -&gt; <span class="hljs-built_in">Result</span>&lt;(), <span class="hljs-built_in">String</span>&gt; {
+        <span class="hljs-keyword">if</span> <span class="hljs-number">2</span> + <span class="hljs-number">2</span> == <span class="hljs-number">4</span> {
+            <span class="hljs-literal">Ok</span>(())
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-literal">Err</span>(<span class="hljs-built_in">String</span>::from(<span class="hljs-string">&quot;two plus two does not equal four&quot;</span>))
         }
     }
 }
@@ -235,18 +243,18 @@ mod tests {
 <li>panicする関数は，戻り値から結果を判定できない</li>
 <li><code>should_panic</code>属性によって，panicした場合にテストが成功として判定する</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>pub fn add_two(a: i32) -&gt; i32 {
-    panic!(&quot;panic! panic! panic!&quot;);
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">pub</span> <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">add_two</span></span>(a: <span class="hljs-built_in">i32</span>) -&gt; <span class="hljs-built_in">i32</span> {
+    <span class="hljs-built_in">panic!</span>(<span class="hljs-string">&quot;panic! panic! panic!&quot;</span>);
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+<span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-keyword">use</span> super::*;
 
-    #[test]
-    #[should_panic]
-    fn run_panic() {
-        add_two(1);
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-meta">#[should_panic]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">run_panic</span></span>() {
+        add_two(<span class="hljs-number">1</span>);
     }
 }
 </span></span></foreignObject></svg></code></pre>
@@ -257,17 +265,17 @@ mod tests {
 <ul>
 <li><code>assert!</code>の第2引数，<code>assert_eq!</code>及び<code>assert_ne!</code>の第3引数に文字列を追加すると，エラーメッセージとして出力される</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>pub fn greeting(name: &amp;str) -&gt; String { String::from(&quot;Hello!&quot;) }
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-keyword">pub</span> <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">greeting</span></span>(name: &amp;<span class="hljs-built_in">str</span>) -&gt; <span class="hljs-built_in">String</span> { <span class="hljs-built_in">String</span>::from(<span class="hljs-string">&quot;Hello!&quot;</span>) }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn greeting_contains_name() {
-        let result = greeting(&quot;Carol&quot;);
-        assert!(
-            result.contains(&quot;Carol&quot;),
-            &quot;Greeting did not contain name, value was `{}`&quot;, result
+<span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-keyword">use</span> super::*;
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">greeting_contains_name</span></span>() {
+        <span class="hljs-keyword">let</span> result = greeting(<span class="hljs-string">&quot;Carol&quot;</span>);
+        <span class="hljs-built_in">assert!</span>(
+            result.contains(<span class="hljs-string">&quot;Carol&quot;</span>),
+            <span class="hljs-string">&quot;Greeting did not contain name, value was `{}`&quot;</span>, result
         );
     }
 }
@@ -301,13 +309,16 @@ error: test failed, to rerun pass '--lib'
 <h1>11.2. テストの実行のされ方を制御する</h1>
 <ul>
 <li>
-<p><code>cargo test</code>はコードをテストモードでコンパイルし，全てのテストを並行に実行します</p>
+<p><code>cargo test</code>はコードをテストモードでコンパイルし，全てのテストを並行に実行する</p>
 </li>
 <li>
-<p>テスト実行中に生成された出力はキャプチャされ，表示されるのを防ぎます</p>
+<p>テスト実行中に生成された出力はキャプチャされ，表示されるのを防ぐ</p>
 </li>
 <li>
-<p>本節ではテストの実行のされ方について述べます</p>
+<p>本節ではテストの実行のされ方について述べる</p>
+</li>
+<li>
+<p>キーワード：<code>--test-threads</code>，<code>--nocapture</code>，<code>ignore</code>属性</p>
 </li>
 </ul>
 <footer>TRPL読書会 #6</footer>
@@ -373,10 +384,10 @@ test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 <ul>
 <li>テストしたくない関数がある場合，<code>ignore</code>属性で除外できる</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>#[test]
-#[ignore]
-fn expensive_test() {
-    // code that takes an hour to run
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">#[test]</span>
+<span class="hljs-meta">#[ignore]</span>
+<span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">expensive_test</span></span>() {
+    <span class="hljs-comment">// code that takes an hour to run</span>
 }
 </span></span></foreignObject></svg></code></pre>
 <pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>$ cargo test
@@ -408,8 +419,18 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="23" data-paginate="true" data-footer="TRPL読書会 #6" data-marpit-pagination="23" data-marpit-pagination-total="28" style="--paginate:true;--footer:TRPL読書会 #6;">
 <h1>11.3. テストの体系化</h1>
 <ul>
-<li>単体テスト：小規模でより集中していて，モジュール内のあらゆる関数をテストできる</li>
-<li>結合テスト：ライブラリと独立したバイナリを生成し，公開された関数のみをテストする</li>
+<li>
+<p>単体テスト：モジュール内のあらゆる関数をテストする</p>
+</li>
+<li>
+<p>結合テスト：ライブラリと独立したバイナリで，公開された関数のみをテストする</p>
+</li>
+<li>
+<p>本節では，単体テストと結合テストの記述方法</p>
+</li>
+<li>
+<p>キーワード：<code>tests</code>ディレクトリ</p>
+</li>
 </ul>
 <footer>TRPL読書会 #6</footer>
 </section>
@@ -420,11 +441,11 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out
 <li><code>cargo test</code>を実行した際にテスト関数が実行される</li>
 <li>非公開関数もテストできる</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-meta">#[cfg(test)]</span>
+<span class="hljs-keyword">mod</span> tests {
+    <span class="hljs-meta">#[test]</span>
+    <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_works</span></span>() {
+        <span class="hljs-built_in">assert_eq!</span>(<span class="hljs-number">2</span> + <span class="hljs-number">2</span>, <span class="hljs-number">4</span>);
     }
 }
 </span></span></foreignObject></svg></code></pre>
@@ -435,12 +456,12 @@ mod tests {
 <ul>
 <li><code>src</code>ディレクトリと同じ階層に<code>tests</code>ディレクトリを作成すると，<code>Cargo</code>はそこに結合テストのファイルが置かれると認識する</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>// tests/integration_tests.rs
-extern crate adder;
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-comment">// tests/integration_tests.rs</span>
+<span class="hljs-keyword">extern</span> <span class="hljs-keyword">crate</span> adder;
 
-#[test]
-fn it_adds_two() {
-    assert_eq!(4, adder::add_two(2));
+<span class="hljs-meta">#[test]</span>
+<span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_adds_two</span></span>() {
+    <span class="hljs-built_in">assert_eq!</span>(<span class="hljs-number">4</span>, adder::add_two(<span class="hljs-number">2</span>));
 }
 </span></span></foreignObject></svg></code></pre>
 <footer>TRPL読書会 #6</footer>
@@ -466,20 +487,20 @@ test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out
 <ul>
 <li>結合テスト用のサブモジュールは，さらに1つ深い階層に置くことで利用できる</li>
 </ul>
-<pre><code><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap>// tests/common/mod.rs
-pub fn setup() {
-    // setup code specific to your library's tests would go here
+<pre><code class="language-rs"><svg data-marp-fitting="svg" data-marp-fitting-code><foreignObject><span data-marp-fitting-svg-content><span data-marp-fitting-svg-content-wrap><span class="hljs-comment">// tests/common/mod.rs</span>
+<span class="hljs-keyword">pub</span> <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">setup</span></span>() {
+    <span class="hljs-comment">// setup code specific to your library&#x27;s tests would go here</span>
 }
 
-// tests/integration_test.rs
-extern crate adder;
+<span class="hljs-comment">// tests/integration_test.rs</span>
+<span class="hljs-keyword">extern</span> <span class="hljs-keyword">crate</span> adder;
 
-mod common;
+<span class="hljs-keyword">mod</span> common;
 
-#[test]
-fn it_adds_two() {
+<span class="hljs-meta">#[test]</span>
+<span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">it_adds_two</span></span>() {
     common::setup();
-    assert_eq!(4, adder::add_two(2));
+    <span class="hljs-built_in">assert_eq!</span>(<span class="hljs-number">4</span>, adder::add_two(<span class="hljs-number">2</span>));
 }
 </span></span></foreignObject></svg></code></pre>
 <footer>TRPL読書会 #6</footer>
