@@ -36,6 +36,12 @@ jobs:
           config-file: ./20211001-reading-trpl-public/.marprc.yml
           generate-pdf: false
       
+      - name: Convert 20211029-reading-trpl-public
+        uses: KoharaKazuya/marp-cli-action@v1
+        with:
+          config-file: ./20211029-reading-trpl-public/.marprc.yml
+          generate-pdf: false
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
