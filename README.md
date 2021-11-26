@@ -23,3 +23,8 @@
 
 - スライド: [https://kenta11.github.io/slides/20211029-reading-trpl-public](https://kenta11.github.io/slides/20211029-reading-trpl-public)
 - リポジトリ: [https://github.com/Kenta11/slides/tree/gh-pages/20211029-reading-trpl-public](https://github.com/Kenta11/slides/tree/gh-pages/20211029-reading-trpl-public)
+
+### #10
+
+- スライド: [https://kenta11.github.io/slides/20211126-reading-trpl-public](https://kenta11.github.io/slides/20211126-reading-trpl-public)
+- リポジトリ: [https://github.com/Kenta11/slides/tree/gh-pages/20211126-reading-trpl-public](https://github.com/Kenta11/slides/tree/gh-pages/20211126-reading-trpl-public)
