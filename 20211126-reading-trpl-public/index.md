@@ -212,21 +212,31 @@ match x {
 }
 ```
 ---
-# ...で値の範囲に合致させる
+# ..=で値の範囲に合致させる
 
-- `...`記法は限界値を**含む**値の範囲にマッチさせることができる
-- `...`は数値か`char`型にのみ使うことが出来る
+- `..=`記法は限界値を**含む**値の範囲にマッチさせることができる
+    - 古いバージョンでは"..."
+- `..=`は数値か`char`型にのみ使うことが出来る
 
 ```rs
 let x = 5;
 
 match x {
     // 1から5まで
-    1 ... 5 => println!("one through five"),
+    1 ..= 5 => println!("one through five"),
     // それ以外
     _ => println!("something else"),
 }
 ```
+---
+# （補足）..=を浮動小数点数と組み合わせられるか？
+
+- 結論：組み合わせられるが，組み合わせないほうが良い
+- 浮動小数点数型(f32とf64)は`Eq`を持たないため`==`で比較不能
+- ところがかつてRustコンパイラを実装中に，**誤って**浮動小数点数型をパターンで使えるようにしてしまった
+    - [Static rustc_lint::builtin::ILLEGAL_FLOATING_POINT_LITERAL_PATTERN](https://doc.rust-lang.org/stable/nightly-rustc/rustc_lint/builtin/static.ILLEGAL_FLOATING_POINT_LITERAL_PATTERN.html)を参照のこと
+    - [#41620](https://github.com/rust-lang/rust/issues/41620)でも議論されている
+- 将来的にはパターンで使えないようにするとのこと（ref. コンパイル時のメッセージ）
 ---
 # ...を使う便利な例
 
@@ -382,6 +392,25 @@ fn main() {
     let _x = 5;
     let y = 10;
 }
+```
+---
+# （補足）関数をN回実行する方法は無いか？（1/2）
+
+- 関数をN回実行するなら下記の方法が自然
+
+```rs
+for _ in 0..10 {
+    do_something();
+}
+```
+---
+# （補足）関数をN回実行する方法は無いか？（2/2）
+
+- イテレータを使う方法もある
+- ワンライナー的にはこの方が良いかもしれない
+
+```rs
+(0..10).for_each(|_| do_something());
 ```
 ---
 # ..で値の残りの部分を無視する
